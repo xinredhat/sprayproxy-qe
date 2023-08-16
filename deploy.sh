@@ -9,9 +9,6 @@ SCRIPT_DIR="$(
   pwd
 )"
 
-APP_ID="<Replace Me>"
-WEBHOOK_SECRET="<Replace Me>"
-PATH_PRIVATE_KEY="<Replace Me>"
 NAMESPACE="sprayproxy"
 
 precheck_params() {
@@ -21,9 +18,9 @@ precheck_params() {
          exit 1
   fi
 
-  PATH_PRIVATE_KEY="${PATH_PRIVATE_KEY:-}"
-  if [[ -z "$PATH_PRIVATE_KEY" ]]; then
-         echo "ERROR: missed PATH_PRIVATE_KEY"
+  PAC_GITHUB_APP_PRIVATE_KEY="${PAC_GITHUB_APP_PRIVATE_KEY:-}"
+  if [[ -z "$PAC_GITHUB_APP_PRIVATE_KEY" ]]; then
+         echo "ERROR: missed PAC_GITHUB_APP_PRIVATE_KEY"
          exit 1
   fi
 }
@@ -32,8 +29,8 @@ deploy() {
   kubectl apply -k "$SCRIPT_DIR"/config
   # Add pipelines-as-code-secret
   kubectl -n "$NAMESPACE" create secret generic pipelines-as-code-secret \
-         --from-literal github-private-key="$(cat "$PATH_PRIVATE_KEY")" \
-         --from-literal github-application-id="$APP_ID" \
+         --from-literal github-private-key="$(echo "$PAC_GITHUB_APP_PRIVATE_KEY" | base64 -d)" \
+         --from-literal github-application-id="$PAC_GITHUB_APP_ID" \
          --from-literal webhook.secret="$WEBHOOK_SECRET"
 }
 
